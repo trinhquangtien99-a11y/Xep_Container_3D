@@ -1,0 +1,447 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Xếp Container 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f3f5f8;--panel:#fff;--fg:#17202e;--mut:#5d6b80;--line:#d5dce6;--acc:#1f5fbf;--acc-fg:#fff;--bad:#c0392b;--ok:#1d8a55;--view:#e9eef5;--wire:#46556b;--inp:#f7f9fc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141c;--panel:#18202c;--fg:#e6ebf3;--mut:#93a1b6;--line:#2b3647;--acc:#5b9bff;--acc-fg:#07111f;--bad:#ff7b6b;--ok:#4cd08c;--view:#111924;--wire:#8fa3c0;--inp:#111823;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f141c;--panel:#18202c;--fg:#e6ebf3;--mut:#93a1b6;--line:#2b3647;--acc:#5b9bff;--acc-fg:#07111f;--bad:#ff7b6b;--ok:#4cd08c;--view:#111924;--wire:#8fa3c0;--inp:#111823;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:13px/1.45 "Inter",system-ui,sans-serif;padding-block:12px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+h1{font:600 17px "Space Grotesk","Inter",sans-serif;margin:0 0 10px}
+h2{font:600 12px "Inter",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.app{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:12px;align-items:start}
+@media(max-width:860px){.app{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+label{display:flex;flex-direction:column;gap:2px;color:var(--mut);font-size:11px;min-width:0}
+input,select{background:var(--inp);color:var(--fg);border:1px solid var(--line);border-radius:5px;padding:5px 6px;font:inherit;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+input[type=checkbox]{width:auto}
+.g{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(70px,1fr))}
+.g2{display:grid;gap:8px;grid-template-columns:1fr 1fr}
+.chk{flex-direction:row;align-items:center;gap:6px;color:var(--fg);font-size:12px}
+button{font:inherit;border:1px solid var(--line);background:var(--inp);color:var(--fg);border-radius:5px;padding:5px 10px;cursor:pointer}
+button.p{background:var(--acc);color:var(--acc-fg);border-color:var(--acc);font-weight:600}
+button:hover{border-color:var(--acc)}
+.type{border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px}
+.type .hd{display:flex;gap:6px;align-items:center}
+.type .hd input[type=text]{flex:1}
+.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);flex:none}
+.sm{padding:2px 7px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex-direction:row;align-items:center;color:var(--fg);font-size:12px;gap:4px}
+.pins{display:grid;gap:6px}
+.pin{display:grid;grid-template-columns:auto 1fr 70px;gap:6px;align-items:center}
+.pins.off{opacity:.45;pointer-events:none}
+#vwrap{position:relative;background:var(--view);border:1px solid var(--line);border-radius:8px;height:min(62vh,560px);min-height:320px;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.tip{position:absolute;left:8px;top:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;pointer-events:none;max-width:70%}
+.vb{position:absolute;right:8px;top:8px;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.sl label{flex-direction:column}
+.pa{display:flex;gap:6px;flex-wrap:wrap}
+.pa button.on{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:right;font-size:12px}
+th:first-child,td:first-child{text-align:left}
+.scr{overflow:auto;max-height:240px}
+.hm td{text-align:center;padding:2px 4px;min-width:26px;border:1px solid var(--line)}
+.hm td.v{outline:2px solid var(--bad);outline-offset:-2px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mut{color:var(--mut)}
+.note{font-size:11px;color:var(--mut);margin-top:4px}
+</style>
+<h1>Xếp Container 3D</h1>
+<div class="app">
+ <div class="col">
+  <div class="card"><h2>Container</h2>
+   <div class="g2"><label>Loại cont<select id="cont"></select></label><label>Kiểu dàn<select id="layout"><option value="full">Đầy cao, ngắn dãy</option><option value="even">Dàn đều, thấp lớp</option></select></label></div>
+   <div class="g" style="margin-top:8px"><label>Dài lọt lòng (cm)<input id="cL" type="number" step="0.1"></label><label>Rộng (cm)<input id="cW" type="number" step="0.1"></label><label>Cao (cm)<input id="cH" type="number" step="0.1"></label></div>
+   <div class="g" style="margin-top:8px"><label>Gờ đầu trong: giảm cao<input id="inDrop" type="number" step="0.1"></label><label>… trên dài (cm)<input id="inLen" type="number" step="0.1"></label><label>Gờ cửa: giảm cao<input id="doorDrop" type="number" step="0.1"></label><label>… trên dài (cm)<input id="doorLen" type="number" step="0.1"></label></div>
+   <div class="note">Gờ thanh đà ở góc cao: vùng này chiều cao xếp được bị giảm. Nhập 0 nếu không có.</div>
+  </div>
+  <div class="card"><h2>Loại thùng · thứ tự vào: trên xuống = trong ra cửa</h2><div id="types"></div><button id="addT">+ Thêm loại thùng</button>
+   <div class="note">Số lượng để trống hoặc 0 = xếp tối đa. “Chỉ nằm trên” = chỉ đặt lên đầu cột thùng khác, không chịu tải.</div></div>
+  <div class="card"><h2>Chế độ vận hành</h2>
+   <div class="seg"><label><input type="radio" name="mode" value="auto" checked> Tự động 100%</label><label><input type="radio" name="mode" value="semi"> Bán tự động (cố định thông số)</label></div>
+   <div id="pins" class="pins off" style="margin-top:8px">
+    <div class="note">Bán tự động: thùng vào theo đúng thứ tự trong danh sách, từ trên xuống. Tự động 100%: máy tự chọn thứ tự tối ưu.</div>
+    <div class="pin"><input type="checkbox" id="pTc"><span>Cố định số lớp</span><input id="pT" type="number" min="1" value="8"></div>
+    <div class="pin"><input type="checkbox" id="pCc"><span>Cố định số cột (ngang)</span><input id="pC" type="number" min="1" value="4"></div>
+    <div class="note">Cố định hướng và số dãy cho từng loại ở thẻ loại thùng. Phần còn lại máy tự tính.</div>
+   </div>
+   <div class="g2" style="margin-top:8px"><label>Zigzag khi dư ngang<select id="zig"><option value="auto">Tự động</option><option value="off">Tắt</option></select></label><button class="p" id="run" style="align-self:end">Tính xếp</button></div><div class="note bad" id="stale" hidden>Thông số đã đổi: nhấn “Tính xếp” để cập nhật kết quả.</div>
+  </div>
+ </div>
+ <div class="col">
+  <div id="vwrap"><canvas id="cv"></canvas><div class="tip" id="tip" hidden></div>
+   <div class="vb"><button class="sm" data-v="iso">Phối cảnh</button><button class="sm" data-v="door">Từ cửa</button><button class="sm" data-v="top">Trên xuống</button><button class="sm" data-v="side">Bên hông</button></div></div>
+  <div class="card"><div class="sl"><label>Hiện đến dãy <b id="rv"></b><input type="range" id="rs" min="1" value="1"></label><label>Hiện đến lớp <b id="lv"></b><input type="range" id="ls" min="1" value="1"></label></div>
+   <div class="note">Kéo chuột để xoay, lăn chuột để phóng to. Vạch đỏ trên thùng là mặt trên. Rê chuột vào thùng để xem dãy, cột, lớp.</div></div>
+  <div class="card"><h2>Phương án gợi ý</h2><div class="pa" id="pa"></div><div id="sum" style="margin-top:10px"></div></div>
+  <div class="card"><h2>Bản đồ số lớp (dãy × cột)</h2><div class="scr"><table class="hm" id="hm"></table></div><div class="note">Ô viền đỏ: chênh quá 1 thùng so với ô kề.</div></div>
+ </div>
+</div>
+<script>
+/* ===== ENGINE: xếp thùng (đơn vị cm). X=ngang(cột) Y=dọc cont(dãy, 0=đầu trong, L=cửa) Z=cao(lớp) ===== */
+const EPS = 1e-6;
+function oriList(it) {
+  const l = it.l, w = it.w, h = it.h;
+  const all = [
+    { id: 0, dx: l, dy: w, dz: h, hAx: 2, lAx: 0, name: 'Đứng · dài ngang, rộng dọc' },
+    { id: 1, dx: w, dy: l, dz: h, hAx: 2, lAx: 1, name: 'Đứng · dài dọc, rộng ngang' },
+    { id: 2, dx: l, dy: h, dz: w, hAx: 1, lAx: 0, name: 'Nằm · dài ngang, cao dọc' },
+    { id: 3, dx: h, dy: l, dz: w, hAx: 0, lAx: 1, name: 'Nằm · cao ngang, dài dọc' },
+    { id: 4, dx: w, dy: h, dz: l, hAx: 1, lAx: 2, name: 'Nằm · rộng ngang, cao dọc' },
+    { id: 5, dx: h, dy: w, dz: l, hAx: 0, lAx: 2, name: 'Nằm · cao ngang, rộng dọc' }];
+  return all;
+}
+function allowedOris(it, C, pinned) {
+  let ids = it.rot >= 6 ? [0, 1, 2, 3, 4, 5] : it.rot >= 2 ? [0, 1] : [0];
+  if (pinned != null && pinned >= 0) ids = [pinned];
+  const seen = new Set(), out = [];
+  for (const o of oriList(it)) {
+    if (!ids.includes(o.id)) continue;
+    const k = o.dx + '|' + o.dy + '|' + o.dz;
+    if (seen.has(k)) continue; seen.add(k);
+    if (o.dx > C.W + EPS || o.dy > C.L + EPS || o.dz > C.H + EPS) continue;
+    out.push(o);
+  }
+  return out;
+}
+function hLimit(C, y0, y1) {
+  let h = C.H;
+  if (C.inDrop > 0 && y0 < C.inLen - EPS) h = Math.min(h, C.H - C.inDrop);
+  if (C.doorDrop > 0 && y1 > C.L - C.doorLen + EPS) h = Math.min(h, C.H - C.doorDrop);
+  return h;
+}
+function waterfill(rowCaps, c, q) {
+  const mx = Math.max(0, ...rowCaps);
+  const tot = l => { let s = 0; for (const m of rowCaps) s += Math.min(m, l); return s * c; };
+  let lv = 0; while (lv < mx && tot(lv + 1) <= q) lv++;
+  let rem = q - tot(lv);
+  return rowCaps.map(m => { const a = []; for (let j = 0; j < c; j++) { let h = Math.min(m, lv); if (m > lv && rem > 0) { h++; rem--; } a.push(h); } return a; });
+}
+/* blocks: [{it, ori, qty, cols, rows}], caps: [{it, oris, qty}], opt:{T, zig:'auto'|'on'|'off'} */
+function buildPlan(C, blocks, caps, opt) {
+  const T = opt.T || 99; let y = 0; const rows = [], placed = {}, blkInfo = [];
+  const runBlocks = from => { for (let bi = from; bi < blocks.length; bi++) {
+    const b = blocks[bi], o = b.ori; placed[b.it.id] = placed[b.it.id] || 0;
+    const cmax = Math.floor((C.W + EPS) / o.dx), c = Math.max(0, Math.min(cmax, b.cols || 99));
+    const rW = C.W - c * o.dx;
+    let shift = 0;
+    if (c === cmax && rW > 0.5 && rW < o.dx - EPS && opt.zig !== 'off') shift = rW;
+    blkInfo.push({ c, shift, rW });
+    if (c < 1) continue;
+    const q = b.qty > 0 ? b.qty : Infinity, rc = []; let cap = 0, n = 0;
+    while (n < (b.rows || 9999) && y + (n + 1) * o.dy <= C.L + EPS && cap < q) {
+      const y0 = y + n * o.dy, hl = hLimit(C, y0, y0 + o.dy);
+      const m = Math.min(Math.floor((hl + EPS) / o.dz), T, b.it.maxL > 0 ? b.it.maxL : 99);
+      if (m <= 0) break; rc.push(m); cap += c * m; n++;
+    }
+    if (!n) continue;
+    const take = Math.min(q, cap), hs = waterfill(rc, c, take);
+    for (let r = 0; r < n; r++) rows.push({ bi, y0: y + r * o.dy, h: hs[r], c, shift });
+    placed[b.it.id] += take; y += n * o.dy;
+  } };
+  blocks = blocks.slice(); runBlocks(0);
+  /* tháp để xếp thùng "chỉ nằm trên" */
+  const placedCaps = [];
+  const towers = [];
+  rows.forEach((rw, ri) => { const b = blocks[rw.bi], o = b.ori; if (!b.it.carry) return;
+    for (let j = 0; j < rw.c; j++) { const h = rw.h[j]; if (h < 1) continue;
+      const k = h - 1, x = j * o.dx + (rw.shift && k % 2 ? rw.shift : 0);
+      towers.push({ ri, j, h, x, y: rw.y0, dx: o.dx, dy: o.dy, z: h * o.dz, used: false }); } });
+  const tmap = new Map(); towers.forEach(t => tmap.set(t.ri + '_' + t.j, t));
+  const grpOf = (t, co, usedSet) => {
+    for (let ry = 1; ry <= 4; ry++) {
+      for (let k = 0; k < ry; k++) { const u = tmap.get((t.ri + k) + '_' + t.j); if (!u || u.used || usedSet.has(u) || u.h !== t.h || rows[u.ri].bi !== rows[t.ri].bi) return 0; }
+      if (co.dx <= t.dx + EPS && co.dy <= ry * t.dy + EPS) { const yy = t.y + (ry * t.dy - co.dy) / 2; if (t.z + co.dz <= hLimit(C, yy, yy + co.dy) + EPS) return ry; }
+    }
+    return 0;
+  };
+  const assign = (co, q) => { const used = new Set(), out = [];
+    const sorted = towers.slice().sort((a, b) => a.z - b.z || a.ri - b.ri || a.j - b.j);
+    for (const t of sorted) { if (out.length >= q) break; if (t.used || used.has(t)) continue;
+      const ry = grpOf(t, co, used); if (!ry) continue;
+      for (let k = 0; k < ry; k++) used.add(tmap.get((t.ri + k) + '_' + t.j)); out.push({ t, ry }); }
+    return out; };
+  for (const cp of caps) {
+    const q = cp.qty > 0 ? cp.qty : Infinity; let best = null, bl = [];
+    for (const co of cp.oris) { const l = assign(co, q); if (l.length > bl.length || (l.length === bl.length && best && co.dz < best.dz)) { best = co; bl = l; } }
+    if (!best || !bl.length) continue;
+    for (const { t, ry } of bl) { for (let k = 0; k < ry; k++) tmap.get((t.ri + k) + '_' + t.j).used = true;
+      placedCaps.push({ it: cp.it, ori: best, x: t.x + (t.dx - best.dx) / 2, y: t.y + (ry * t.dy - best.dy) / 2, z: t.z, ri: t.ri, j: t.j, layer: t.h, ry }); }
+    placed[cp.it.id] = (placed[cp.it.id] || 0) + bl.length;
+  }
+  /* thùng chỉ-nằm-trên còn dư: xếp vào chỗ trống còn lại ở cuối cont */
+  const nb0 = blocks.length;
+  for (const cp of caps) {
+    const q = cp.qty > 0 ? cp.qty : Infinity, left = q - (placed[cp.it.id] || 0); if (left <= 0) continue;
+    let bo = null, bd = -1; for (const co of cp.oris) { const d = Math.floor(C.W / co.dx) / co.dy; if (d > bd) { bd = d; bo = co; } }
+    if (!bo) continue;
+    blocks.push({ it: Object.assign({}, cp.it, { maxL: cp.it.carry ? cp.it.maxL : 1 }), ori: bo, qty: left, cols: 0, rows: 0 });
+  }
+  runBlocks(nb0);
+  /* điểm */
+  let vol = 0; const all = blocks.map(b => b.it).concat(caps.map(c => c.it));
+  const seen = new Set(); for (const it of all) { if (seen.has(it.id)) continue; seen.add(it.id); vol += (placed[it.id] || 0) * it.l * it.w * it.h; }
+  const grid = rows.map(r => r.h.slice()); placedCaps.forEach(p => { for (let k = 0; k < p.ry; k++) grid[p.ri + k][p.j]++; });
+  let viol = 0;
+  for (let r = 0; r < grid.length; r++) for (let j = 0; j < grid[r].length; j++) {
+    if (j + 1 < grid[r].length && Math.abs(grid[r][j] - grid[r][j + 1]) > 1) viol++;
+    if (r + 1 < grid.length && j < grid[r + 1].length && Math.abs(grid[r][j] - grid[r + 1][j]) > 1) viol++; }
+  const usedLen = y;
+  return { blocks, caps, rows, placedCaps, placed, vol, fill: vol / (C.W * C.L * C.H), viol, usedLen, grid, blkInfo, opt };
+}
+function planScore(C, p, mode) {
+  const t = p.usedLen / C.L * 0.8;
+  return p.fill * 1000 - p.viol * 1.5 + (mode === 'even' ? t : -t);
+}
+function permutations(a) { if (a.length <= 1) return [a.slice()]; const r = [];
+  a.forEach((x, i) => permutations(a.slice(0, i).concat(a.slice(i + 1))).forEach(p => r.push([x].concat(p)))); return r; }
+function searchPlans(C, items, st, budgetMs) {
+  const t0 = performance.now(), auto = st.mode === 'auto', pin = !auto;
+  const base = items.filter(i => !i.top), top = items.filter(i => i.top);
+  const pinO = it => (pin && it.pinOri >= 0) ? it.pinOri : null;
+  const oriSets = base.map(it => {
+    let os = allowedOris(it, C, pinO(it));
+    if (os.length > 3 && base.length >= 3) os = os.map(o => ({ o, d: Math.floor(C.W / o.dx) * Math.floor(C.H / o.dz) / o.dy })).sort((a, b) => b.d - a.d).slice(0, 3).map(x => x.o);
+    return os; });
+  if (oriSets.some(s => !s.length)) return [];
+  const capOris = top.map(it => allowedOris(it, C, pinO(it)));
+  const capSpec = top.map((it, i) => ({ it, oris: capOris[i], qty: it.qty })).filter(c => c.oris.length);
+  let orders = (pin && st.pinOrder) ? [base] : permutations(base);
+  if (orders.length > 24) orders = orders.slice(0, 24);
+  let Tmax = 1; base.forEach((it, i) => oriSets[i].forEach(o => Tmax = Math.max(Tmax, Math.floor(C.H / o.dz), 1)));
+  Tmax = Math.min(Tmax, 40);
+  let Ts = (pin && st.pinT > 0) ? [st.pinT] : Array.from({ length: Tmax }, (_, i) => Tmax - i);
+  const combos = oriSets.reduce((a, s) => a * s.length, 1);
+  if (orders.length * combos * Ts.length > 30000 && !(pin && st.pinT > 0)) Ts = Ts.filter((t, i) => i < 2 || i % 3 === 0);
+  const best = new Map(); let K = 6, worst = -1e9;
+  const idx = base.map(() => 0);
+  const lenCombos = combos;
+  for (let ci = 0; ci < lenCombos; ci++) {
+    let r = ci; const pick = oriSets.map(s => { const o = s[r % s.length]; r = Math.floor(r / s.length); return o; });
+    for (const ord of orders) for (const T of Ts) {
+      if (performance.now() - t0 > budgetMs && best.size) break;
+      const blocks = ord.map(it => ({ it, ori: pick[base.indexOf(it)], qty: it.qty, cols: pin ? st.pinCols : 0, rows: pin ? it.pinRows : 0 }));
+      const p = buildPlan(C, blocks, capSpec, { T, zig: st.zig });
+      p.score = planScore(C, p, st.layout);
+      const key = blocks.map(b => b.it.id + ':' + b.ori.id).join(',') + '#' + p.grid.map(g => g.join('.')).join('/') + '#' + p.placedCaps.length;
+      if (best.has(key)) continue;
+      if (best.size >= K && p.score <= worst) continue;
+      p.T = T; best.set(key, p);
+      if (best.size > K) { let wk = null, ws = 1e9; best.forEach((v, k) => { if (v.score < ws) { ws = v.score; wk = k; } }); best.delete(wk); }
+      worst = 1e9; best.forEach(v => worst = Math.min(worst, v.score));
+    }
+  }
+  return Array.from(best.values()).sort((a, b) => b.score - a.score);
+}
+function instantiate(C, plan) {
+  const out = [];
+  plan.rows.forEach((rw, ri) => { const b = plan.blocks[rw.bi], o = b.ori;
+    for (let j = 0; j < rw.c; j++) for (let k = 0; k < rw.h[j]; k++)
+      out.push({ x: j * o.dx + (rw.shift && k % 2 ? rw.shift : 0), y: rw.y0, z: k * o.dz, dx: o.dx, dy: o.dy, dz: o.dz, it: b.it, ori: o, ri, j, k }); });
+  plan.placedCaps.forEach(p => out.push({ x: p.x, y: p.y, z: p.z, dx: p.ori.dx, dy: p.ori.dy, dz: p.ori.dz, it: p.it, ori: p.ori, ri: p.ri, j: p.j, k: p.layer, cap: true }));
+  return out;
+}
+function validateBoxes(C, boxes) {
+  let bad = 0; const msg = [];
+  for (const b of boxes) {
+    if (b.x < -EPS || b.y < -EPS || b.z < -EPS || b.x + b.dx > C.W + EPS || b.y + b.dy > C.L + EPS || b.z + b.dz > hLimit(C, b.y, b.y + b.dy) + EPS) { bad++; msg.push('vượt thành'); } }
+  const s = boxes.slice().sort((a, b) => a.y - b.y); let act = [];
+  for (const b of s) { act = act.filter(a => a.y + a.dy > b.y + EPS);
+    for (const a of act) if (a.x < b.x + b.dx - EPS && b.x < a.x + a.dx - EPS && a.z < b.z + b.dz - EPS && b.z < a.z + a.dz - EPS) { bad++; msg.push('chồng lấn'); }
+    act.push(b); }
+  /* đỡ: mỗi thùng z>0 phải có thùng bên dưới chạm đáy */
+  const byZ = new Map(); boxes.forEach(b => { const k = Math.round((b.z + b.dz) * 10); (byZ.get(k) || byZ.set(k, []).get(k)).push(b); });
+  for (const b of boxes) if (b.z > EPS) { const c = byZ.get(Math.round(b.z * 10)) || [];
+    if (!c.some(a => a.x < b.x + b.dx - EPS && b.x < a.x + a.dx - EPS && a.y < b.y + b.dy - EPS && b.y < a.y + a.dy - EPS)) { bad++; msg.push('lơ lửng'); } }
+  return { bad, msg: msg.slice(0, 3) };
+}
+if (typeof module !== 'undefined') module.exports = { buildPlan, searchPlans, instantiate, validateBoxes, oriList, allowedOris, hLimit };
+/* ===== RENDER 3D (canvas 2D, không phụ thuộc thư viện) ===== */
+const R = { yaw: -0.6, pitch: 0.5, zoom: 1, boxes: [], C: null, polys: [], hover: -1 };
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+function cssv(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); const r = Math.min(255, (n >> 16) * f) | 0, g = Math.min(255, ((n >> 8) & 255) * f) | 0, b = Math.min(255, (n & 255) * f) | 0; return `rgb(${r},${g},${b})`; }
+function proj(p, cx, cy, cz, sc, ox, oy) {
+  const x = p[0] - cx, y = p[1] - cy, z = p[2] - cz, cyw = Math.cos(R.yaw), syw = Math.sin(R.yaw);
+  const x1 = x * cyw - y * syw, y1 = x * syw + y * cyw, cp = Math.cos(R.pitch), sp = Math.sin(R.pitch);
+  return [ox + x1 * sc, oy - (z * cp + y1 * sp) * sc, y1 * cp - z * sp];
+}
+function draw() {
+  const C = R.C; if (!C) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  const cx = C.W / 2, cy = C.L / 2, cz = C.H / 2;
+  /* tỉ lệ vừa khung */
+  let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9;
+  for (let i = 0; i < 8; i++) { const q = proj([i & 1 ? C.W : 0, i & 2 ? C.L : 0, i & 4 ? C.H : 0], cx, cy, cz, 1, 0, 0); mnx = Math.min(mnx, q[0]); mxx = Math.max(mxx, q[0]); mny = Math.min(mny, q[1]); mxy = Math.max(mxy, q[1]); }
+  const sc = Math.min(w / (mxx - mnx), h / (mxy - mny)) * 0.9 * R.zoom, ox = w / 2 - (mnx + mxx) / 2 * sc, oy = h / 2 - (mny + mxy) / 2 * sc;
+  const P = p => proj(p, cx, cy, cz, sc, ox, oy);
+  const wire = cssv('--wire');
+  /* sàn */
+  ctx.fillStyle = 'rgba(120,140,170,.18)'; ctx.beginPath();
+  [[0, 0, 0], [C.W, 0, 0], [C.W, C.L, 0], [0, C.L, 0]].forEach((p, i) => { const q = P(p); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.fill();
+  const edge = (a, b, lw, col) => { const p = P(a), q = P(b); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.stroke(); };
+  /* cạnh sau của container (vẽ trước thùng) */
+  const cs = []; for (let i = 0; i < 8; i++) cs.push([i & 1 ? C.W : 0, i & 2 ? C.L : 0, i & 4 ? C.H : 0]);
+  const cedges = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+  cedges.forEach(e => edge(cs[e[0]], cs[e[1]], 1, wire));
+  /* gờ thanh đà */
+  const bar = (y0, y1, d) => { if (d <= 0) return; edge([0, y0, C.H - d], [C.W, y0, C.H - d], 2, '#c98b1f'); edge([0, y1, C.H - d], [C.W, y1, C.H - d], 2, '#c98b1f'); edge([0, y0, C.H - d], [0, y1, C.H - d], 2, '#c98b1f'); edge([C.W, y0, C.H - d], [C.W, y1, C.H - d], 2, '#c98b1f'); };
+  bar(0, C.inLen, C.inDrop); bar(C.L - C.doorLen, C.L, C.doorDrop);
+  if (R.free) { const y0 = R.free.y0; ctx.fillStyle = 'rgba(40,170,100,.14)'; ctx.beginPath();
+    [[0, y0, 0], [C.W, y0, 0], [C.W, C.L, 0], [0, C.L, 0]].forEach((p, i) => { const q = P(p); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.fill();
+    ctx.setLineDash([5, 4]); [[[0, y0, 0], [C.W, y0, 0]], [[C.W, y0, 0], [C.W, y0, C.H]], [[C.W, y0, C.H], [0, y0, C.H]], [[0, y0, C.H], [0, y0, 0]]].forEach(e => edge(e[0], e[1], 1.5, '#1d8a55')); ctx.setLineDash([]); }
+  /* thùng */
+  const vis = R.boxes.map((b, i) => ({ b, i })).filter(o => o.b._show);
+  const dep = o => { const b = o.b; return P([b.x + b.dx / 2, b.y + b.dy / 2, b.z + b.dz / 2])[2]; };
+  vis.forEach(o => o.d = dep(o)); vis.sort((a, b) => b.d - a.d);
+  R.polys = [];
+  const nrm = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], cyw = Math.cos(R.yaw), syw = Math.sin(R.yaw), cp = Math.cos(R.pitch), sp = Math.sin(R.pitch);
+  const fshade = [0.82, 0.82, 0.72, 0.9, 1.08, 0.6];
+  for (const o of vis) {
+    const b = o.b, x0 = b.x, x1 = b.x + b.dx, y0 = b.y, y1 = b.y + b.dy, z0 = b.z, z1 = b.z + b.dz, col = b.it.color;
+    const V = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]].map(P);
+    const faces = [[1, 2, 6, 5], [0, 3, 7, 4], [3, 2, 6, 7], [0, 1, 5, 4], [4, 5, 6, 7], [0, 1, 2, 3]];
+    const mn = nrm[b.ori.hAx * 2], mfVis = (mn[0] * syw + mn[1] * cyw) * cp - mn[2] * sp < 0;
+    for (let f = 0; f < 6; f++) {
+      const n = nrm[f], nx = n[0] * cyw - n[1] * syw, ny = n[0] * syw + n[1] * cyw, nd = ny * cp - n[2] * sp;
+      if (nd >= 0) continue;
+      const poly = faces[f].map(k => V[k]);
+      ctx.beginPath(); poly.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath();
+      ctx.fillStyle = shade(col, fshade[f]); ctx.fill(); ctx.lineWidth = 0.6; ctx.strokeStyle = 'rgba(15,25,45,.55)'; ctx.stroke();
+      if (o.i === R.hover) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fill(); }
+      R.polys.push({ i: o.i, poly });
+      if (f >> 1 !== b.ori.hAx && !mfVis && f % 2 === 0 || (f >> 1 !== b.ori.hAx && !mfVis && f % 2 === 1)) {
+        const hx2 = b.ori.hAx, ax = f >> 1, tt = 3 - ax - hx2, lo2 = [x0, y0, z0], ex2 = [b.dx, b.dy, b.dz], pa = [0, 0, 0];
+        pa[ax] = f % 2 === 0 ? lo2[ax] + ex2[ax] : lo2[ax]; pa[hx2] = lo2[hx2] + ex2[hx2] * 0.88; const pb = pa.slice();
+        pa[tt] = lo2[tt] + ex2[tt] * 0.25; pb[tt] = lo2[tt] + ex2[tt] * 0.75;
+        const p1 = P(pa), p2 = P(pb); ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.lineWidth = Math.max(1.2, sc * 0.9); ctx.strokeStyle = '#e02020'; ctx.stroke();
+      }
+      /* vạch đỏ mặt trên */
+      const hx = b.ori.hAx, mf = hx * 2; /* mặt +trục = chỉ số 2*hAx */
+      if (f === mf) {
+        const la = b.ori.lAx, ob = [0, 1, 2].filter(a => a !== hx && a !== la)[0];
+        const lo = [x0, y0, z0], ex = [b.dx, b.dy, b.dz]; const a = [lo[0] + ex[0] / 2, lo[1] + ex[1] / 2, lo[2] + ex[2] / 2], bb = a.slice();
+        a[hx] = lo[hx] + ex[hx]; bb[hx] = a[hx]; a[la] = lo[la] + ex[la] * 0.12; bb[la] = lo[la] + ex[la] * 0.88;
+        const p = P(a), q = P(bb); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.lineWidth = Math.max(1.2, sc * 0.9); ctx.strokeStyle = '#e02020'; ctx.stroke();
+      }
+    }
+  }
+  /* cạnh trước container */
+  [[1, 3], [5, 7], [2, 3], [6, 7], [3, 7], [2, 6]].forEach(e => edge(cs[e[0]], cs[e[1]], 1.4, wire));
+  ctx.fillStyle = cssv('--mut'); ctx.font = '11px Inter,sans-serif';
+  const lab = (t, p) => { const q = P(p), tw = ctx.measureText(t).width, bx = q[0] - tw / 2, by = q[1] + 22; ctx.fillStyle = cssv('--panel'); ctx.globalAlpha = 0.9; ctx.fillRect(bx - 5, by - 12, tw + 10, 17); ctx.globalAlpha = 1; ctx.fillStyle = cssv('--fg'); ctx.fillText(t, bx, by); };
+  lab('CỬA' + (R.free ? ' · trống ' + (C.L - R.free.y0).toFixed(0) + ' cm' : ''), [C.W / 2, C.L, 0]); lab('ĐẦU TRONG', [C.W / 2, 0, 0]);
+}
+function schedule() { if (!schedule.q) { schedule.q = 1; requestAnimationFrame(() => { schedule.q = 0; draw(); }); } }
+function setView(v) { const m = { iso: [-0.6, 0.5], door: [0, 0.08], top: [0, 1.5], side: [-1.5708, 0.05] }[v]; R.yaw = m[0]; R.pitch = m[1]; R.zoom = 1; schedule(); }
+(function () {
+  let dn = null;
+  cv.addEventListener('pointerdown', e => { dn = [e.clientX, e.clientY]; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; });
+  cv.addEventListener('pointerup', () => { dn = null; cv.style.cursor = 'grab'; });
+  cv.addEventListener('pointermove', e => {
+    if (dn) { R.yaw += (e.clientX - dn[0]) * 0.008; R.pitch = Math.max(0.02, Math.min(1.55, R.pitch + (e.clientY - dn[1]) * 0.008)); dn = [e.clientX, e.clientY]; schedule(); return; }
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; let hit = -1;
+    for (let k = R.polys.length - 1; k >= 0; k--) { const pl = R.polys[k].poly; let ins = false; for (let i = 0, j = pl.length - 1; i < pl.length; j = i++) { if ((pl[i][1] > y) !== (pl[j][1] > y) && x < (pl[j][0] - pl[i][0]) * (y - pl[i][1]) / (pl[j][1] - pl[i][1]) + pl[i][0]) ins = !ins; } if (ins) { hit = R.polys[k].i; break; } }
+    if (hit !== R.hover) { R.hover = hit; const t = document.getElementById('tip'); if (hit >= 0) { const b = R.boxes[hit]; t.hidden = false; t.textContent = `${b.it.name} · Dãy ${b.ri + 1} · Cột ${b.j + 1} · Lớp ${b.k + 1}${b.cap ? ' (chồng trên)' : ''} · ${b.dx}×${b.dy}×${b.dz} cm`; } else t.hidden = true; schedule(); }
+  });
+  cv.addEventListener('wheel', e => { e.preventDefault(); R.zoom = Math.max(0.4, Math.min(8, R.zoom * (e.deltaY < 0 ? 1.1 : 0.9))); schedule(); }, { passive: false });
+  new ResizeObserver(schedule).observe(cv);
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change', schedule);
+  new MutationObserver(schedule).observe(document.documentElement, { attributes: true });
+})();
+/* ===== UI ===== */
+const CONTS = { '20GP': ['Cont 20\' (20GP)', 589.8, 235.2, 239.3], '40GP': ['Cont 40\' (40GP)', 1203.2, 235.2, 239.3], '40HC': ['Cont 40\' cao (40HC)', 1203.2, 235.2, 269.8], '45HC': ['Cont 45\' cao (45HC)', 1355.6, 235.2, 269.8], 'custom': ['Tùy chỉnh', 800, 235.2, 250] };
+const COLORS = ['#7aa2e3', '#e3a35b', '#6fbf9a', '#c78ad1', '#e6c84e', '#e07b7b'];
+const $ = id => document.getElementById(id);
+const mkItems = () => [
+  { id: 'A', name: 'Thùng A', l: 55, w: 24.8, h: 28, qty: 1000, rot: 2, maxL: 0, carry: true, top: false, pinOri: -1, pinRows: 0, color: COLORS[0] },
+  { id: 'B', name: 'Thùng B', l: 48, w: 36, h: 30, qty: 300, rot: 6, maxL: 0, carry: true, top: false, pinOri: -1, pinRows: 0, color: COLORS[1] },
+  { id: 'C', name: 'Hàng nhẹ C', l: 40, w: 30, h: 22, qty: 200, rot: 2, maxL: 0, carry: false, top: true, pinOri: -1, pinRows: 0, color: COLORS[2] }];
+const S = { cont: '40HC', C: {}, itemsBy: {}, mode: 'auto', layout: 'full', zig: 'auto', plans: [], sel: 0, uid: 10 };
+function setCont(id) { S.cont = id; const c = CONTS[id]; if (id !== 'custom' || !S.C.L) Object.assign(S.C, { L: c[1], W: c[2], H: c[3] });
+  if (id !== 'custom') Object.assign(S.C, { inDrop: 0, inLen: 0, doorDrop: 11, doorLen: 10 });
+  if (!S.itemsBy[id]) S.itemsBy[id] = mkItems(); syncC(); renderTypes(); }
+const items = () => S.itemsBy[S.cont];
+function syncC() { [['cL', 'L'], ['cW', 'W'], ['cH', 'H'], ['inDrop', 'inDrop'], ['inLen', 'inLen'], ['doorDrop', 'doorDrop'], ['doorLen', 'doorLen']].forEach(([i, k]) => $(i).value = S.C[k]); }
+function renderTypes() {
+  const oriOpt = it => '<option value="-1">Tự chọn</option>' + oriList(it).map(o => `<option value="${o.id}" ${it.pinOri === o.id ? 'selected' : ''}>${o.name}</option>`).join('');
+  $('types').innerHTML = items().map((it, i) => `<div class="type" data-i="${i}">
+   <div class="hd"><span class="sw" style="background:${it.color}"></span><input type="text" data-k="name" value="${it.name}" aria-label="Tên loại">
+    <button class="sm" data-a="up" title="Vào sớm hơn">↑</button><button class="sm" data-a="dn" title="Vào muộn hơn">↓</button><button class="sm" data-a="del" title="Xóa">✕</button></div>
+   <div class="g"><label>Dài<input type="number" step="0.1" data-k="l" value="${it.l}"></label><label>Rộng<input type="number" step="0.1" data-k="w" value="${it.w}"></label><label>Cao<input type="number" step="0.1" data-k="h" value="${it.h}"></label><label>Số lượng<input type="number" min="0" data-k="qty" value="${it.qty || ''}" placeholder="tối đa"></label></div>
+   <div class="g2"><label>Xoay được<select data-k="rot"><option value="1" ${it.rot == 1 ? 'selected' : ''}>1 hướng (cố định)</option><option value="2" ${it.rot == 2 ? 'selected' : ''}>2 hướng (xoay ngang)</option><option value="6" ${it.rot == 6 ? 'selected' : ''}>6 hướng (cho nằm)</option></select></label>
+    <label>Số lớp chồng tối đa<input type="number" min="0" data-k="maxL" value="${it.maxL || ''}" placeholder="không giới hạn"></label></div>
+   <div class="seg"><label><input type="checkbox" data-k="carry" ${it.carry ? 'checked' : ''} ${it.top ? 'disabled' : ''}> Chịu thùng khác chồng lên</label><label><input type="checkbox" data-k="top" ${it.top ? 'checked' : ''}> Chỉ nằm trên</label></div>
+   <div class="g2 semi"><label>Chốt hướng (bán tự động)<select data-k="pinOri">${oriOpt(it)}</select></label><label>Chốt số dãy<input type="number" min="0" data-k="pinRows" value="${it.pinRows || ''}" placeholder="tự tính"></label></div></div>`).join('');
+}
+$('types').addEventListener('input', onType); $('types').addEventListener('change', onType);
+function onType(e) {
+  const t = e.target, k = t.dataset.k; if (!k) return; const row = t.closest('.type'), it = items()[+row.dataset.i];
+  if (t.type === 'checkbox') it[k] = t.checked; else if (k === 'name') it[k] = t.value; else it[k] = parseFloat(t.value) || 0;
+  if (k === 'top') { if (it.top) it.carry = false; renderTypes(); }
+  if (k === 'l' || k === 'w' || k === 'h') renderTypes_keep(); if (e.type === 'change' || k !== 'name') plan();
+}
+function renderTypes_keep() { /* giữ nguyên ô đang gõ, chỉ cập nhật danh sách hướng */ }
+$('types').addEventListener('click', e => { const a = e.target.dataset.a; if (!a) return; const i = +e.target.closest('.type').dataset.i, L = items();
+  if (a === 'del') L.splice(i, 1); if (a === 'up' && i > 0) [L[i - 1], L[i]] = [L[i], L[i - 1]]; if (a === 'dn' && i < L.length - 1) [L[i + 1], L[i]] = [L[i], L[i + 1]];
+  renderTypes(); plan(); });
+$('addT').onclick = () => { const n = items().length; items().push({ id: 'T' + (S.uid++), name: 'Thùng ' + (n + 1), l: 40, w: 30, h: 25, qty: 100, rot: 2, maxL: 0, carry: true, top: false, pinOri: -1, pinRows: 0, color: COLORS[n % COLORS.length] }); renderTypes(); plan(); };
+$('cont').innerHTML = Object.keys(CONTS).map(k => `<option value="${k}">${CONTS[k][0]}</option>`).join(''); $('cont').value = S.cont;
+$('cont').onchange = () => { setCont($('cont').value); plan(); };
+['cL:L', 'cW:W', 'cH:H', 'inDrop:inDrop', 'inLen:inLen', 'doorDrop:doorDrop', 'doorLen:doorLen'].forEach(s => { const [i, k] = s.split(':'); $(i).oninput = () => { S.C[k] = parseFloat($(i).value) || 0; plan(); }; });
+$('layout').onchange = () => { S.layout = $('layout').value; plan(); }; $('zig').onchange = () => { S.zig = $('zig').value; plan(); };
+document.querySelectorAll('input[name=mode]').forEach(r => r.onchange = () => { S.mode = r.value; $('pins').classList.toggle('off', S.mode === 'auto'); plan(); });
+['pTc', 'pT', 'pCc', 'pC'].forEach(i => $(i).oninput = plan); $('run').onclick = plan0;
+document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => setView(b.dataset.v));
+let tm = 0; const planDeb = () => { clearTimeout(tm); tm = setTimeout(plan0, 200); };
+function plan() { $('stale').hidden = false; }
+function plan0() {
+  $('stale').hidden = true;
+  const st = { mode: S.mode, layout: S.layout, zig: S.zig, pinOrder: S.mode === 'semi', pinT: $('pTc').checked ? +$('pT').value : 0, pinCols: $('pCc').checked ? +$('pC').value : 0 };
+  const its = items().map((it, i) => Object.assign({}, it, { id: it.id })); S.plans = searchPlans(S.C, its, st, 1200); S.sel = 0; show();
+}
+function show() {
+  const C = S.C, p = S.plans[S.sel];
+  R.C = C; $('pa').innerHTML = S.plans.map((q, i) => `<button class="${i === S.sel ? 'on' : ''}" data-s="${i}">PA ${i + 1} · ${(q.fill * 100).toFixed(1)}% · ${q.rows.length} dãy</button>`).join('') || '<span class="bad">Không có hướng nào lọt vào container. Kiểm tra kích thước.</span>';
+  document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { S.sel = +b.dataset.s; show(); });
+  if (!p) { R.boxes = []; schedule(); $('sum').innerHTML = ''; $('hm').innerHTML = ''; return; }
+  R.boxes = instantiate(C, p); const maxR = p.rows.length || 1, maxK = Math.max(1, ...R.boxes.map(b => b.k + 1));
+  $('rs').max = maxR; $('rs').value = maxR; $('ls').max = maxK; $('ls').value = maxK; applyClip();
+  const v = validateBoxes(C, R.boxes), want = {}; items().forEach(it => want[it.id] = it);
+  let h = '<table><tr><th>Loại</th><th>Cần</th><th>Xếp</th><th>Rớt</th><th>Hướng</th><th>Ngang×Cao×Dãy</th></tr>';
+  const lines = {}; p.rows.forEach(r => { const b = p.blocks[r.bi]; const l = lines[r.bi] || (lines[r.bi] = { c: r.c, hmax: 0, n: 0 }); l.n++; l.hmax = Math.max(l.hmax, ...r.h); });
+  items().forEach(it => { const got = p.placed[it.id] || 0, bi = p.blocks.findIndex(b => b.it.id === it.id), cap = p.caps.find(c => c.it.id === it.id), ln = bi >= 0 ? lines[bi] : null;
+    const ori = bi >= 0 ? p.blocks[bi].ori.name : (cap ? cap.oris[0].name : '-');
+    h += `<tr><td><span class="sw" style="display:inline-block;width:10px;height:10px;background:${it.color};vertical-align:middle"></span> ${it.name}</td><td>${it.qty || '∞'}</td><td class="${it.qty && got < it.qty ? 'bad' : ''}">${got}</td><td class="${it.qty && got < it.qty ? 'bad' : 'mut'}">${it.qty && got < it.qty ? it.qty - got : 0}</td><td style="text-align:left;font-size:11px">${ori}</td><td>${ln ? `${ln.c}×${ln.hmax}×${ln.n}` : (it.top ? 'chồng trên' : '-')}</td></tr>`; });
+  h += '</table>';
+  const tops = {}; R.boxes.forEach(b => { const k = b.ri + '_' + b.j; tops[k] = Math.max(tops[k] || 0, b.z + b.dz); });
+  let hrMin = 1e9, hrMax = 0; Object.keys(tops).forEach(k => { const rw = p.rows[+k.split('_')[0]]; const hr = hLimit(C, rw.y0, rw.y0 + p.blocks[rw.bi].ori.dy) - tops[k]; hrMin = Math.min(hrMin, hr); hrMax = Math.max(hrMax, hr); });
+  if (hrMin > 1e8) hrMin = 0;
+  const freeLen = Math.max(0, C.L - p.usedLen), freeVol = (1 - p.fill) * C.W * C.L * C.H / 1e6;
+  R.free = freeLen > 0.5 ? { y0: p.usedLen } : null;
+  const nz = p.blkInfo.some((b, i) => b.shift > 0);
+  h += `<p style="margin:8px 0 0">Lấp đầy thể tích <b>${(p.fill * 100).toFixed(1)}%</b> · dùng <b>${p.usedLen.toFixed(0)}</b>/${C.L} cm chiều dài · tổng <b>${R.boxes.length}</b> thùng · zigzag: <b>${nz ? 'có' : 'không'}</b></p>
+  <p style="margin:4px 0 0">Khoảng trống: <b>${freeVol.toFixed(1)} m³</b> · cuối cont còn trống dài <b>${freeLen.toFixed(0)} cm</b> (${C.W}×${C.H} cm) · khoảng hở phía trên các cột: <b>${hrMin.toFixed(0)}–${hrMax.toFixed(0)} cm</b></p>
+  <p style="margin:4px 0 0" class="${p.viol ? 'bad' : 'ok'}">${p.viol ? `Có ${p.viol} chỗ chênh quá 1 thùng giữa cột/dãy kề nhau` : 'Chiều cao các cột và dãy kề nhau chênh không quá 1 thùng'}</p>
+  <p style="margin:4px 0 0" class="${v.bad ? 'bad' : 'ok'}">${v.bad ? 'Lỗi hình học: ' + v.msg.join(', ') : 'Đã kiểm tra: không chồng lấn, không vượt thành, không lơ lửng'}</p>`;
+  const miss = items().filter(it => it.qty && (p.placed[it.id] || 0) < it.qty).map(it => `${it.name}: ${it.qty - (p.placed[it.id] || 0)} thùng`);
+  h = `<p style="margin:0 0 8px;font-weight:600" class="${miss.length ? 'bad' : 'ok'}">${miss.length ? 'Rớt lại: ' + miss.join(' · ') : 'Xếp hết toàn bộ thùng'}</p>` + h;
+  $('sum').innerHTML = h;
+  const nc = Math.max(0, ...p.grid.map(g => g.length)), mx = Math.max(1, ...p.grid.map(g => Math.max(0, ...g)));
+  let t = '<tr><th>Dãy \\ Cột</th>' + Array.from({ length: nc }, (_, j) => `<th>${j + 1}</th>`).join('') + '</tr>';
+  p.grid.forEach((g, r) => { t += `<tr><th>${r + 1}</th>` + g.map((x, j) => { const bad = (j + 1 < g.length && Math.abs(x - g[j + 1]) > 1) || (j > 0 && Math.abs(x - g[j - 1]) > 1) || (p.grid[r + 1] && j < p.grid[r + 1].length && Math.abs(x - p.grid[r + 1][j]) > 1) || (r > 0 && j < p.grid[r - 1].length && Math.abs(x - p.grid[r - 1][j]) > 1);
+    return `<td class="${bad ? 'v' : ''}" style="background:rgba(31,95,191,${(0.08 + 0.5 * x / mx).toFixed(2)})">${x}</td>`; }).join('') + '</tr>'; });
+  $('hm').innerHTML = t;
+}
+function applyClip() { const r = +$('rs').value, l = +$('ls').value; $('rv').textContent = r; $('lv').textContent = l; R.boxes.forEach(b => b._show = b.ri < r && b.k < l); schedule(); }
+$('rs').oninput = applyClip; $('ls').oninput = applyClip;
+setCont('40HC'); plan0(); setView('iso');
+</script>
+
+</body></html>
